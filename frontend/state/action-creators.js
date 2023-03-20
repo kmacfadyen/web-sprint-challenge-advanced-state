@@ -70,7 +70,7 @@ export function postAnswer(data) {
     // - Dispatch an action to reset the selected answer state
     // - Dispatch an action to set the server message to state
     // - Dispatch the fetching of the next quiz
-    dispatch({ type: SET_SELECTED_ANSWER, payload: null });
+      dispatch({ type: SET_SELECTED_ANSWER, payload: null });
     axios.post(`http://localhost:9000/api/quiz/answer`, data)
     .then (res => {
       dispatch({ type: SET_INFO_MESSAGE, payload: res.data.message })
@@ -85,7 +85,9 @@ export function postQuiz(data) {
     // - Dispatch the resetting of the form
     axios.post(`http://localhost:9000/api/quiz/new`, data)
     .then (res => {
-      dispatch({ type: SET_INFO_MESSAGE, payload: `Congrats "${res.data.question}" is a great question!`})
+        dispatch({ type: SET_INFO_MESSAGE, payload: `Congrats "${res.data.question}" is a great question!`})
+      .catch(err => console.error(err))
+        dispatch({ type: RESET_FORM })
     })
   }
 }
