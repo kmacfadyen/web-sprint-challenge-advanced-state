@@ -10,9 +10,7 @@ function Quiz(props) {
 
   if (!props.selectedAnswer) {
   useEffect(() => {
-    // if (!props.quiz) {
       fetchQuiz();
-    // }
   }, []);
 }
 
@@ -30,10 +28,10 @@ function Quiz(props) {
 
     const { postAnswer, quiz, selectedAnswer } = props
 
-    postAnswer({ 
-      quiz_id: quiz.quiz_id,
+    postAnswer(
+      quiz.quiz_id,
       selectedAnswer
-    });
+    );
   }
 
   return (

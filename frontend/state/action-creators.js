@@ -53,7 +53,7 @@ export function resetForm() {
  }
 
 // ❗ Async action creators
-export function fetchQuiz() {
+export function fetchQuiz(data) {
   return function (dispatch) {
     // First, dispatch an action to reset the quiz state (so the "Loading next quiz..." message can display)
     // On successful GET:
@@ -72,22 +72,23 @@ export function postAnswer(question, answer) {
     // - Dispatch an action to reset the selected answer state
     // - Dispatch an action to set the server message to state
     // - Dispatch the fetching of the next quiz
-    dispatch({ type: types.SET_SELECTED_ANSWER, payload: null })
 
     axios.post(`http://localhost:9000/api/quiz/answer`, {'quiz_id': question, 'answer_id': answer})
     .then (res => {
+      dispatch({ type: types.SET_SELECTED_ANSWER, payload: null })
+
       dispatch({ type: types.SET_INFO_MESSAGE, payload: res.data.message })
       dispatch(fetchQuiz())
     })
     .catch(err => console.error(err))
   }
 }
-export function postQuiz(data) {
+export function postQuiz(form1) {
   return function (dispatch) {
     // On successful POST:
     // - Dispatch the correct message to the the appropriate state
     // - Dispatch the resetting of the form
-    axios.post(`http://localhost:9000/api/quiz/new`, {'question_text': data.newQuestion, 'true_answer_text': data.newTrueAnswer, 'false_answer_text': data.newFalseAnswer})
+    axios.post(`http://localhost:9000/api/quiz/new`, {'question_text': form1.newQuestion, 'true_answer_text': form1.newTrueAnswer, 'false_answer_text': form1.newFalseAnswer})
     .then (res => {
       const newQuestion = res.data
         dispatch({ type: types.SET_INFO_MESSAGE, payload: `Congrats: "${newQuestion.question}" is a great question!`})
