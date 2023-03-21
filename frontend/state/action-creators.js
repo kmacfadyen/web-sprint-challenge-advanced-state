@@ -1,79 +1,83 @@
-import { MOVE_CLOCKWISE, MOVE_COUNTERCLOCKWISE, SET_QUIZ_INTO_STATE, SET_SELECTED_ANSWER, SET_INFO_MESSAGE, INPUT_CHANGE, RESET_FORM } from './action-types';
+// import { MOVE_CLOCKWISE, MOVE_COUNTERCLOCKWISE, SET_QUIZ_INTO_STATE, SET_SELECTED_ANSWER, SET_INFO_MESSAGE, INPUT_CHANGE, RESET_FORM } from './action-types';
+import * as types from './action-types';
 import axios from 'axios';
+import { Form } from '../components/Form';
 
 // ❗ You don't need to add extra action creators to achieve MVP
 export function moveClockwise() {
   return {
-    type: MOVE_CLOCKWISE,
+    type: types.MOVE_CLOCKWISE,
     payload: 1
   }
  }
 
 export function moveCounterClockwise() {
   return {
-    type: MOVE_COUNTERCLOCKWISE,
+    type: types.MOVE_COUNTERCLOCKWISE,
     payload: -1
   }
  }
 
 export function selectAnswer(inputed) {
   return {
-    type: SET_SELECTED_ANSWER,
+    type: types.SET_SELECTED_ANSWER,
     payload: inputed
   }
  }
 
 export function setMessage(message) {
   return {
-    type: SET_INFO_MESSAGE,
+    type: types.SET_INFO_MESSAGE,
     payload: message
   }
  }
 
 export function setQuiz(currentQuiz) {
   return {
-    type: SET_QUIZ_INTO_STATE,
+    type: types.SET_QUIZ_INTO_STATE,
     payload: currentQuiz
   }
  }
 
 export function inputChange(value, value2) {
   return {
-    type: INPUT_CHANGE,
+    type: types.INPUT_CHANGE,
     payload: value, value2
   }
  }
 
 export function resetForm() {
   return {
-    type: RESET_FORM
+    type: types.RESET_FORM
   }
  }
 
 // ❗ Async action creators
-export function fetchQuiz(quiz) {
+export function fetchQuiz() {
   return function (dispatch) {
     // First, dispatch an action to reset the quiz state (so the "Loading next quiz..." message can display)
     // On successful GET:
     // - Dispatch an action to send the obtained quiz to its state
-    dispatch({ type: SET_QUIZ_INTO_STATE, payload: null });
+    dispatch({ type: types.SET_QUIZ_INTO_STATE, payload: null });
     axios.get(`http://localhost:9000/api/quiz/next`)
     .then (res => {
-      dispatch({ type: SET_QUIZ_INTO_STATE, payload: res.data })
+      dispatch({ type: types.SET_QUIZ_INTO_STATE, payload: res.data })
     })
     .catch(err => console.error(err))
   }
 }
-export function postAnswer(data) {
+export function postAnswer(question, answer) {
   return function (dispatch) {
     // On successful POST:
     // - Dispatch an action to reset the selected answer state
     // - Dispatch an action to set the server message to state
     // - Dispatch the fetching of the next quiz
-      dispatch({ type: SET_SELECTED_ANSWER, payload: null });
-    axios.post(`http://localhost:9000/api/quiz/answer`, data)
+    dispatch({ type: types.SET_SELECTED_ANSWER, payload: null })
+
+    axios.post(`http://localhost:9000/api/quiz/answer`, {'quiz_id': question, 'answer_id': answer})
     .then (res => {
-      dispatch({ type: SET_INFO_MESSAGE, payload: res.data.message })
+      dispatch({ type: types.SET_INFO_MESSAGE, payload: res.data.message })
+      dispatch(fetchQuiz())
     })
     .catch(err => console.error(err))
   }
@@ -83,12 +87,13 @@ export function postQuiz(data) {
     // On successful POST:
     // - Dispatch the correct message to the the appropriate state
     // - Dispatch the resetting of the form
-    axios.post(`http://localhost:9000/api/quiz/new`, data)
+    axios.post(`http://localhost:9000/api/quiz/new`, {'question_text': data.newQuestion, 'true_answer_text': data.newTrueAnswer, 'false_answer_text': data.newFalseAnswer})
     .then (res => {
-        dispatch({ type: SET_INFO_MESSAGE, payload: `Congrats "${res.data.question}" is a great question!`})
-      .catch(err => console.error(err))
-        dispatch({ type: RESET_FORM })
+      const newQuestion = res.data
+        dispatch({ type: types.SET_INFO_MESSAGE, payload: `Congrats: "${newQuestion.question}" is a great question!`})
+        dispatch({ type: types.RESET_FORM })
     })
+    .catch(err => console.error(err))
   }
 }
 // ❗ On promise rejections, use log statements or breakpoints, and put an appropriate error message in state
